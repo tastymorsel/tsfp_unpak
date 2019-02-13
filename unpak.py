@@ -14,17 +14,21 @@ if (len(sys.argv) == 3):
         z = c2n.readlines()
         for n in z:
             crc,name = n.split()
-            c2n_file[crc] = name.replace('/', '_')
+            c2n_file[crc] = name;
 
 if (magic0 != 'P' or magic1 != '5' or magic2 != 'C' or magic3 != 'K'):
     print "This doesn't look like a pak file."
     sys.exit(-1)
 
-if (os.path.exists("./unpak") and os.path.isdir("./unpak")):
+pak_filename = os.path.basename( sys.argv[1] )
+base_dir = "./" + os.path.splitext(pak_filename)[0] + "/"
+
+if (os.path.exists(base_dir) and os.path.isdir(base_dir)):
     print "Output folder already exists."
     sys.exit(-1)
 
-os.makedirs("./unpak")
+
+os.makedirs(base_dir)
 
 f.seek(offset, 0)
 
@@ -44,9 +48,12 @@ for fi in file_infos:
     print ':' + outname + ':'
     if (c2n_file.has_key(outname)):
         outname = c2n_file[outname]
+    outname = base_dir + outname
+    if not ( os.path.exists( os.path.dirname(outname) ) and os.path.isdir( os.path.dirname(outname) ) ):
+        		os.makedirs(os.path.dirname(outname))
     if (fi[3] == 0):
         fd = f.read(fi[2])
-        with open("./unpak/" + outname, "wb") as o:
+        with open(outname, "wb") as o:
             o.write(fd)
     else:
         fd = f.read(fi[3])
@@ -55,7 +62,7 @@ for fi in file_infos:
             g.close()
         with gzip.open("temp.gz", "rb") as gz:
             data = gz.read()
-            with open("./unpak/" + outname, "wb") as o:
+            with open(outname, "wb") as o:
                 o.write(data)       
 
 f.close()
